@@ -33,6 +33,7 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
         help="Creates a backup folder called 'blackdoc_backup' (if the folder backup does not exist, otherwise it exits) "
         "(Default True).",
         action="store_true",
+        default=True,
         required=False,
     )
 
@@ -106,8 +107,11 @@ if __name__ == "__main__":
         files = []
         for dirpath, dirnames, filenames in os.walk(curr_dir, topdown=True):
             relative_path = dirpath.replace(curr_dir, "")
-            if any(subfolder == ignored for subfolder in relative_path.split("/")
-                                        for ignored in ignored_folders.get("ignored_directories", [])):
+            if any(
+                subfolder == ignored
+                for subfolder in relative_path.split("/")
+                for ignored in ignored_folders.get("ignored_directories", [])
+            ):
                 continue
 
             for single_file in filenames:

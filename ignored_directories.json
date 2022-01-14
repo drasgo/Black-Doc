@@ -1,0 +1,18 @@
+{
+    "ignored_directories": [
+        "venv",
+        "virtualenv",
+        "__pycache__",
+        "build",
+        "dist",
+        "doc",
+        "docs",
+        "Docs",
+        ".git",
+        ".gitignore",
+        ".idea",
+        ".pytest_cache",
+        "*.egg-info",
+        "html"
+]
+}

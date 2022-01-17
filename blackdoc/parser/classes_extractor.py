@@ -14,10 +14,13 @@ class ClassesExtractor:
         """
         class_data = list()
 
-        for class_element in self.classes.get("classes", list()):
+        for class_element in self.classes:
             class_model = dict()
 
             class_model["name"] = class_element.get("name", "")
+            class_model["genus"] = class_element.get("genus", "")
+            class_model["complete_context"] = class_element.get("complete_context")
+            class_model["inheritance"] = class_element["inheritance"]
             class_model["start_line"], class_model["end_line"] = (
                 class_element.get("start_line"),
                 class_element.get("end_line"),
@@ -28,6 +31,10 @@ class ClassesExtractor:
 
             class_model["methods"] = self.collect_class_methods(
                 class_model.get("name", ""), self.functions
+            )
+
+            class_model["__init__"] = self.collect_method_body(
+                class_model.get("name", ""), "__init__", self.functions
             )
 
             class_model["class_variables"] = self.get_variables(
@@ -53,6 +60,14 @@ class ClassesExtractor:
         for element in class_element.get(cls_obj, []):
             variables.append(element)
         return variables
+
+    def collect_method_body(
+        self, class_name: str, method_name: str, module_methods: List[dict]
+    ) -> dict:
+        body = [method for method in module_methods
+                if method.get("parent_class") == class_name and
+                method.get("name") == method_name]
+        return body[0] if body else {}
 
     def collect_class_methods(
         self, class_name: str, module_methods: List[dict]

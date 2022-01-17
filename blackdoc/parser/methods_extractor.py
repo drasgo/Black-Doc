@@ -16,6 +16,7 @@ METHODS_RECORD_KEYS = [
     "number_annotated_parameters",
     "parameters",
     "context",
+    "documentation",
     "complete_context",
 ]
 
@@ -35,7 +36,7 @@ class MethodsExtractor:
         If parsing does not succeed returns an empty list
         """
         # Iterate over functions computing some extra data not contained in the parsepy returned data
-        for f in self.functions["functions"]:
+        for f in self.functions:
             if "documentation" in f:
                 f["num_lines_of_code"] = (
                     f["total_lines"] - len(f["documentation"].splitlines())
@@ -64,10 +65,8 @@ class MethodsExtractor:
                         type(ex).__name__,
                     )
                     f["number_annotated_parameters"] = 0
-
         module_methods = [
             {k: f.get(k, None) for k in METHODS_RECORD_KEYS}
-            for f in self.functions.get("functions", [])
+            for f in self.functions
         ]
-
-        return (module_methods,)
+        return module_methods

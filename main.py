@@ -60,7 +60,7 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
         help="Creates a backup folder called 'blackdoc_backup' (if the folder backup does not exist, otherwise it exits) "
         "(Default True).",
         action="store_true",
-        default=True,
+        default=False,
         required=False,
     )
 
@@ -190,7 +190,7 @@ if __name__ == "__main__":
                 continue
 
             for single_file in filenames:
-                if single_file.endswith(".py"):
+                if single_file.endswith(".py") and single_file.endswith("core.py"):
                     files.append((single_file, os.path.join(dirpath, single_file)))
 
         if workers > 1:

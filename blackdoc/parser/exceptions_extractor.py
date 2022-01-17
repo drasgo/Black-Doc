@@ -10,5 +10,4 @@ class ExceptionsExtractor:
         Tries to parse (via `py:parsepy.Parser`) the exceptions in the module at module_path.
         If parsing does not succeed returns an empty list
         """
-        pass
-        # exceptions = self.parser.get_data(ParsepyOperations)
+        return self.exceptions

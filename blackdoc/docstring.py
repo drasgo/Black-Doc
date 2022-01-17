@@ -60,9 +60,8 @@ class DocumentFile:
                 if (elem_index == 0 or
                 not any(current_elem.get("start_line") == prev_elem.get("start_line")
                         for prev_elem in self.sorted_elements[:elem_index])) and \
-                current_elem.get("name").strip() == "TensorNode":
-                # not current_elem.get("documentation").strip():
-
+                not current_elem.get("documentation").strip():
+                # current_elem.get("name").strip() == "TensorNode":
                     new_docstring = self.generate_element_docstring(current_elem)
                     self.add_docstring_2_code_element(new_docstring, current_elem.get("start_line"))
             except Exception as exc:
@@ -117,7 +116,6 @@ class DocumentFile:
         When there is a nuon and an adjective, the adjective is referring to the nuon and nothing has to change.
         This is also true for the case of a single noun.
         """
-        print(element.get("name"))
         tabs = self.get_tabs(element)
         quote_marks = '"""'
 
@@ -149,7 +147,9 @@ class DocumentFile:
         thread PROPN compound []
         manager NOUN ROOT [thread]
         """
+        # TODO
         print("doing class " + class_element.get("name"))
+
         docstring = ""
         # docstring = self.describe_class(class_element.get("name"), tabs)
         parameters = self.class_docstring_parameters(class_element, tabs)
@@ -194,7 +194,7 @@ class DocumentFile:
         exceptions_info: list,
         tabs: str = ""
     ) -> str:
-        print("doing class " + method_element.get("name"))
+        print("doing method " + method_element.get("name"))
         method_exceptions = []
         if exceptions_info:
             method_exceptions = [
@@ -204,7 +204,8 @@ class DocumentFile:
                 and exceptions["ending_line"] < method_element["end_line"]
             ]
 
-        result = "tttt"
+        # TODO
+        result = ""
         # result = self.describe_method(element)
         result += self.method_docstring_parameters(method_element, tabs)
 
@@ -218,48 +219,46 @@ class DocumentFile:
         result = ""
         arguments = []
 
-        if method_info is not None:
-            for argument_index in range(len(method_info["parameters"])):
-                argument = method_info["parameters"][argument_index]
+        for argument_index in range(len(method_info["parameters"])):
+            argument = method_info["parameters"][argument_index]
 
-                if "self" == argument["name"] and argument_index == 0:
-                    continue
+            if "self" == argument["name"] and argument_index == 0:
+                continue
 
-                arguments.append(
-                    {
-                        "name": argument["name"],
-                        "type": ""
-                        if not argument["param_type_hint"]
-                        else argument["param_type_hint"],
-                        "default": argument["value"],
-                    }
-                )
-
-        for param in arguments:
-            result += f"\n{tabs}:param {param['name']}: "
+            arguments.append(
+                {
+                    "name": argument["name"],
+                    "type": ""
+                    if not argument["param_type_hint"]
+                    else argument["param_type_hint"],
+                    "default": argument["value"],
+                }
+            )
 
         for param in arguments:
-            if len(param["type"]) > 0:
+            result += f"\n{tabs}:param {param['name']}: XXX"
+
+            if param["default"]:
+                if param["type"] == "str":
+                    result += f'. (Default="{param["default"]}")'
+                else:
+                    result += f'. (Default={param["default"]})'
+
+            if param["type"]:
                 result += f"\n{tabs}:type {param['name']}: {param['type']}"
-                result += '. It defaults to ' + param['default'] if param['default'] and param['default'] != 'N/A' else ''
-
         return result
 
     @staticmethod
     def method_docstring_exceptions(exceptions, tabs: str) -> str:
         result = ""
         for exception in exceptions:
-            result += f"\n{tabs}:raises: {', '.join([exception['exception_name']])}"
-            if exception["exception_alias"] != "N/A":
-                result += f" as {exception['exception_alias']}"
+            result += f"\n{tabs}:raises {', '.join([exception['exception_name']])}: XXX"
         return result
 
     # NLP-based
 
     @staticmethod
     def get_tabs(element: dict) -> str:
-        print(len(element.get("complete_context")) + 1)
-        print(element.get("complete_context"))
         return "\t" * (len(element.get("complete_context")))
 
     def tokenize_identifier(self, element_name: str) -> list:
@@ -304,6 +303,7 @@ class DocumentFile:
         return result + "."
 
     def describe_method(self, element: dict) -> str:
+        # TODO
         element_name = element.get("name")
         if element_name in PREFABS_EXPLANATIONS:
             result = ""

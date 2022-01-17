@@ -19,6 +19,7 @@ class ClassesExtractor:
 
             class_model["name"] = class_element.get("name", "")
             class_model["genus"] = class_element.get("genus", "")
+            class_model["documentation"] = class_element.get("documentation")
             class_model["complete_context"] = class_element.get("complete_context")
             class_model["inheritance"] = class_element["inheritance"]
             class_model["start_line"], class_model["end_line"] = (

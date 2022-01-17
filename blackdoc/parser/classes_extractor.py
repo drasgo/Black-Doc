@@ -27,7 +27,7 @@ class ClassesExtractor:
             )
 
             class_model["methods"] = self.collect_class_methods(
-                class_element.get("name", ""), self.functions
+                class_model.get("name", ""), self.functions
             )
 
             class_model["class_variables"] = self.get_variables(
@@ -56,7 +56,7 @@ class ClassesExtractor:
 
     def collect_class_methods(
         self, class_name: str, module_methods: List[dict]
-    ) -> List[dict]:
+    ) -> List[str]:
         """Retrieves the methods of the class.
 
         :param class_name: Name of the extracted class
@@ -66,7 +66,7 @@ class ClassesExtractor:
         :returns: list - Collection of all the class methods of the class with the given name
         """
         return [
-            method
+            method.get("name")
             for method in module_methods
             if method.get("parent_class") == class_name
         ]

@@ -1,5 +1,5 @@
 spacy
 nltk
 black
-./external_packages/PythonParser-1.0.0-py3-none-any.whl
+./external_packages/PythonParser-1.0.1-py3-none-any.whl
 ./external_packages/NLPUtilities-1.0.0-py3-none-any.whl

@@ -1,18 +1,45 @@
+# Silences useless warnings
+import os
+import warnings
+from multiprocessing.managers import BaseManager
+
+warnings.filterwarnings("ignore")
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
 import argparse
 import multiprocessing
 
-import os
 import shutil
-import json
 
 from nlputilities.nlp import NLPUtilities
 
-from blackdoc.black_repo import black_file, black_repo
+from blackdoc.black import black_file, black_repo
+from blackdoc.configs import log
 from blackdoc.docstring import DocumentFile
 
 __version__ = "0.8.0"
+DEFAULT_WORKERS = 1
+IGNORED_DIRECTORIES = [
+    "blackdoc_backup",
+    "venv",
+    "virtualenv",
+    "__pycache__",
+    "build",
+    "dist",
+    "doc",
+    "docs",
+    "Docs",
+    ".git",
+    ".gitignore",
+    ".idea",
+    ".pytest_cache",
+    "*.egg-info",
+    "html",
+]
 
-DEFAULT_WORKERS = 2
+
+class NLPManager(BaseManager):
+    pass
 
 
 def get_cli_argument_parser() -> argparse.ArgumentParser:
@@ -42,6 +69,7 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
         "--no_black",
         help="Does not perform the black operations, and only generates the docstring templates (Default False).",
         action="store_true",
+        default=True,
         required=False,
     )
 
@@ -63,32 +91,78 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
 
 
 def document_file(file_name: str, file_path: str):
+    log(f"Documenting {file_name}")
     docs = DocumentFile(file_name, file_path, nlp_utilities)
     docs.document_file()
     return
 
 
-if __name__ == "__main__":
-    curr_dir = __file__[: __file__.rfind("/")]
+def create_backup(is_backup: bool):
+    log("Backing up repository")
+    if is_backup:
+        if os.path.exists(curr_dir + "/blackdoc_backup"):
+            shutil.rmtree(curr_dir + "/blackdoc_backup")
+        shutil.copytree(curr_dir, curr_dir + "/blackdoc_backup")
 
+
+def initialize_NLP():
+    log("Loading NLP-based tools")
+    NLPManager.register(
+        "NLPUtilities",
+        NLPUtilities,
+        exposed=[
+            "initialize_all_datasets",
+            "initialize_segmenter",
+            "initialize_spell_checker",
+            "initialize_spacy",
+            "initialize_verbs",
+            "initialize_stemmer",
+            "use_segmenter",
+            "use_spell_checker",
+            "use_lemmetizer",
+            "check_abbreviation",
+            "extend_contraction",
+            "use_phrase_checker",
+            "use_pos_dependency_tagger",
+            "use_words_stemmer",
+            "identifier_checker",
+            "input_vectorization",
+            "english_score",
+            "separator_score",
+            "get_pos_tags",
+        ],
+    )
+    mymanager = NLPManager()
+    mymanager.start()
+    toolset = mymanager.NLPUtilities()
+    toolset.initialize_segmenter()
+    toolset.initialize_spell_checker()
+    toolset.initialize_spacy()
+    toolset.initialize_verbs()
+    toolset.initialize_stemmer()
+    log("NLP utilities loaded")
+    return toolset
+
+
+if __name__ == "__main__":
+    curr_dir = os.getcwd()
     arg_parser = get_cli_argument_parser()
     cli_arguments = arg_parser.parse_args()
 
     workers = DEFAULT_WORKERS if not cli_arguments.workers else cli_arguments.workers
 
-    if cli_arguments.backup:
-        shutil.copytree(curr_dir, curr_dir + "/blackdoc_backup")
+    create_backup(cli_arguments.backup)
 
     # Initialize nlp utilities once for every worker
-    nlp_utilities = NLPUtilities
-    nlp_utilities.initialize_segmenter()
-    nlp_utilities.initialize_spell_checker()
-    nlp_utilities.initialize_spacy()
-    nlp_utilities.initialize_verbs()
-    nlp_utilities.initialize_stemmer()
+    nlp_utilities = None
+    # nlp_utilities = initialize_NLP()
 
     if cli_arguments.file:
-        curr_file = curr_dir + "/" + cli_arguments.file
+        curr_file = (
+            f"{curr_dir}/{cli_arguments.file}"
+            if "/" not in cli_arguments.file
+            else cli_arguments.file
+        )
         filename = (
             cli_arguments.file
             if "/" not in cli_arguments.file
@@ -101,8 +175,9 @@ if __name__ == "__main__":
         document_file(filename, curr_file)
 
     else:
-        ignored_folders = json.load(open("ignored_directories.json", "r"))
-        black_repo()
+        if not cli_arguments.no_black:
+            print("Blacking")
+            black_repo()
 
         files = []
         for dirpath, dirnames, filenames in os.walk(curr_dir, topdown=True):
@@ -110,7 +185,7 @@ if __name__ == "__main__":
             if any(
                 subfolder == ignored
                 for subfolder in relative_path.split("/")
-                for ignored in ignored_folders.get("ignored_directories", [])
+                for ignored in IGNORED_DIRECTORIES
             ):
                 continue
 

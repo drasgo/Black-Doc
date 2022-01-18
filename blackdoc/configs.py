@@ -7,15 +7,41 @@ CONFIGURATION_NAME = "blackdock_configuration.toml"
 
 
 def log(data: str = ""):
+    """
+    This method is XXX . It is a global method.
+
+    :param data: XXX. (Default="")
+    :type data: str
+    """
+
     print(data)
 
 
 class NLPManager(BaseManager):
+    """
+    This class XXX .    Extends class BaseManager.
+    """
+
     pass
 
 
 class Config:
-    ignored_directories: List[str] = [
+    """
+    This class XXX .    Methods:
+    :method load_configs:
+    :method _set_values:
+
+
+    Attributes:
+    :ivar None: 
+    :ivar None: 
+    :ivar None: 
+    :ivar None: 
+    :ivar None: 
+    :ivar None:
+    """
+
+    blacklist: List[str] = [
         # "test",
         # "tests",
         "blackdoc_backup",
@@ -35,6 +61,10 @@ class Config:
         "html"
     ]
 
+    whitelist: List[str] = [
+
+    ]
+
     workers: int = 1
 
     @staticmethod
@@ -49,8 +79,11 @@ class Config:
         miscellaneous = configs.get("blackdoc", {})
 
         Config.workers = miscellaneous.get("workers", Config.workers)
-        Config.ignored_directories = miscellaneous.get(
-            "ignored_directories", Config.ignored_directories
+        Config.blacklist = miscellaneous.get(
+            "blacklist", Config.blacklist
+        )
+        Config.whitelist = miscellaneous.get(
+            "whitelist", Config.whitelist
         )
 
     @staticmethod

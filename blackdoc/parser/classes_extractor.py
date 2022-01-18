@@ -13,7 +13,29 @@ CLASSES_RECORD_KEYS = [
 
 
 class ClassesExtractor:
+    """
+    This class XXX .
+
+    Methods:
+    :method collect_class_methods:
+    :method collect_data:
+    :method collect_method_body:
+    :method __init__:
+    :method get_variables:
+
+
+    :param parsed_classes: XXX
+    :param parsed_functions: XXX
+    """
+
     def __init__(self, parsed_classes, parsed_functions):
+        """
+        This overrides the built-in object Initializator. It is a class method of ClassesExtractor.
+
+        :param parsed_classes: XXX
+        :param parsed_functions: XXX
+        """
+
         self.classes = parsed_classes
         self.functions = parsed_functions
 
@@ -70,6 +92,18 @@ class ClassesExtractor:
     def collect_method_body(
             class_name: str, method_name: str, module_methods: List[dict]
     ) -> dict:
+        """
+        This method is XXX . It is a static class method of ClassesExtractor.
+
+        :param class_name: XXX
+        :type class_name: str
+        :param method_name: XXX
+        :type method_name: str
+        :param module_methods: XXX
+        :type module_methods: List[dict]
+        :returns: dict - XXX
+        """
+
         body = [method for method in module_methods
                 if method.get("parent_class") == class_name and
                 method.get("name") == method_name]

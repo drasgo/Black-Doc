@@ -1,5 +1,4 @@
 import os
-import pprint
 
 from blackdoc.parser.classes_extractor import ClassesExtractor
 from blackdoc.parser.fileParser import FileParser
@@ -45,7 +44,45 @@ PREFAB_METHOD_DESCRIPTIONS = {
 
 
 class DocumentFile:
+    """
+    This class XXX .    Methods:
+    :method add_docstring_2_code_element:
+    :method get_tabs:
+    :method _get_code:
+    :method generate_class_documentation:
+    :method describe_method:
+    :method method_docstring_exceptions:
+    :method parse_code:
+    :method generate_element_docstring:
+    :method __init__:
+    :method document_file:
+    :method class_docstring_parameters:
+    :method method_docstring_parameters:
+    :method generate_method_documentation:
+    :method tokenize_identifier:
+    :method _set_code:
+    :method cleanup_code:
+    :method describe_class:
+
+
+    :param filename: XXX
+    :type filename: str
+    :param file_path: XXX
+    :type file_path: str
+    :param nlp_utilities: XXX
+    """
+
     def __init__(self, filename: str, file_path: str, nlp_utilities):
+        """
+        This overrides the built-in object Initializator. It is a class method of DocumentFile.
+
+        :param filename: XXX
+        :type filename: str
+        :param file_path: XXX
+        :type file_path: str
+        :param nlp_utilities: XXX
+        """
+
         self.nlp_utilities = nlp_utilities
         self.filename = filename
         self.file_path = file_path
@@ -58,6 +95,12 @@ class DocumentFile:
         self.code = self._get_code()
 
     def _get_code(self) -> str:
+        """
+        This method is XXX . It is a class method of DocumentFile.
+
+        :returns: str - XXX
+        """
+
         if os.path.isfile(self.file_path):
             with open(self.file_path, "r") as fp:
                 return fp.read()
@@ -66,17 +109,37 @@ class DocumentFile:
 
     @staticmethod
     def cleanup_code(code):
+        """
+        This method is XXX . It is a static class method of DocumentFile.
+
+        :param code: XXX
+        """
+
         return code.replace("\t", "    ")
 
     def _set_code(self):
+        """
+        This method is XXX . It is a class method of DocumentFile.
+        """
+
         with open(self.file_path, "w") as fp:
-            fp.write(self.cleanup_code(self.code))
+            fp.write(self.code)
 
     def parse_code(self) -> bool:
+        """
+        This method is XXX . It is a class method of DocumentFile.
+
+        :returns: bool - XXX
+        """
+
         self.parser = FileParser(self.code)
         return self.parser.check_code_validity()
 
     def document_file(self):
+        """
+        This method is XXX . It is a class method of DocumentFile.
+        """
+
         if not self.parse_code() or \
                 (not self.parser.get_classes() and not self.parser.get_functions()):
             return False
@@ -89,8 +152,6 @@ class DocumentFile:
             self.classes + self.functions,
             key=lambda elem: elem.get("start_line"), reverse=True
         )
-        # d = [{"name": elem["name"], "start": elem["start_line"], "type": elem["genus"]} for elem in self.sorted_elements]
-        # pprint.pprint([i for n, i in enumerate(d) if i not in d[n + 1:]])
 
         for elem_index in range(len(self.sorted_elements)):
             current_elem = self.sorted_elements[elem_index]
@@ -98,23 +159,27 @@ class DocumentFile:
                 not any(current_elem.get("start_line") == prev_elem.get("start_line")
                         for prev_elem in self.sorted_elements[:elem_index])) and \
                     not current_elem.get("documentation").strip():
-                # current_elem.get("name").strip() == "TensorNode":
                 new_docstring = self.generate_element_docstring(current_elem)
                 self.code = self.add_docstring_2_code_element(new_docstring, current_elem.get("start_line"))
 
+        self.code = self.cleanup_code(self.code)
         if not self.parse_code():
-            print("failed")
-            print(self.code)
-            input()
             return False
 
-        print("success")
-        print(self.code)
-        input()
         self._set_code()
         return True
 
     def add_docstring_2_code_element(self, docstring: str, start_line: int) -> str:
+        """
+        This is an adder method. This method is XXX . It is a class method of DocumentFile.
+
+        :param docstring: XXX
+        :type docstring: str
+        :param start_line: XXX
+        :type start_line: int
+        :returns: str - XXX
+        """
+
         new_code = self.code.split("\n")
         existing_docstring = False
         start_line = start_line - 1
@@ -198,17 +263,27 @@ class DocumentFile:
         return docstring + parameters
 
     def class_docstring_parameters(self, class_element: dict, tabs: str) -> str:
+        """
+        This method is XXX . It is a class method of DocumentFile.
+
+        :param class_element: XXX
+        :type class_element: dict
+        :param tabs: XXX
+        :type tabs: str
+        :returns: str - XXX
+        """
+
         if not class_element["inheritance"]:
             info = ""
         else:
-            info = f"{tabs}Extends " \
+            info = f"\n{tabs}Extends " \
                    f"{('class ' if len(class_element['inheritance']) == 1 else 'classes ')}" \
                    f"{', '.join(class_element['inheritance'])}.\n\n"
         # print("post inheritance")
         # print(info)
 
         if class_element.get("methods"):
-            info += f"{tabs}Methods:\n"
+            info += f"\n{tabs}Methods:\n"
             for method in set(class_element["methods"]):
                 info += f"{tabs}:method {method}:\n"
             info += "\n"
@@ -236,14 +311,26 @@ class DocumentFile:
         exceptions_info: list,
         tabs: str = ""
     ) -> str:
+        """
+        This method is XXX . It is a class method of DocumentFile.
+
+        :param method_element: XXX
+        :type method_element: dict
+        :param exceptions_info: XXX
+        :type exceptions_info: list
+        :param tabs: XXX. (Default="")
+        :type tabs: str
+        :returns: str - XXX
+        """
+
         # print("doing method " + method_element.get("name"))
         method_exceptions = []
         if exceptions_info:
             method_exceptions = [
-                exceptions["exceptions_handled"]
+                exceptions["exception"]
                 for exceptions in exceptions_info
-                if exceptions["starting_line"] > method_element["start_line"]
-                and exceptions["ending_line"] < method_element["end_line"]
+                if exceptions["start_line"] > method_element["start_line"]
+                and exceptions["end_line"] < method_element["end_line"]
             ]
 
         result = self.describe_method(method_element, tabs)
@@ -256,6 +343,16 @@ class DocumentFile:
 
     @staticmethod
     def method_docstring_parameters(method_info: dict, tabs: str) -> str:
+        """
+        This method is XXX . It is a static class method of DocumentFile.
+
+        :param method_info: XXX
+        :type method_info: dict
+        :param tabs: XXX
+        :type tabs: str
+        :returns: str - XXX
+        """
+
         result = ""
         arguments = []
 
@@ -279,10 +376,7 @@ class DocumentFile:
             result += f"\n{tabs}:param {param['name']}: XXX"
 
             if param["default"]:
-                if param["type"] == "str":
-                    result += f'. (Default="{param["default"]}")'
-                else:
-                    result += f'. (Default={param["default"]})'
+                result += f'. (Default={param["default"]})'
 
             if param["type"]:
                 result += f"\n{tabs}:type {param['name']}: {param['type']}"
@@ -293,18 +387,43 @@ class DocumentFile:
 
     @staticmethod
     def method_docstring_exceptions(exceptions, tabs: str) -> str:
+        """
+        This method is XXX . It is a static class method of DocumentFile.
+
+        :param exceptions: XXX
+        :param tabs: XXX
+        :type tabs: str
+        :returns: str - XXX
+        """
+
         result = ""
         for exception in exceptions:
-            result += f"\n{tabs}:raises {', '.join([exception['exception_name']])}: XXX"
+            result += f"\n{tabs}:raises {', '.join([exception['name']])}: XXX"
         return result
 
     # NLP-based
 
     @staticmethod
     def get_tabs(element: dict) -> str:
+        """
+        This is a getter method. This method is XXX . It is a static class method of DocumentFile.
+
+        :param element: XXX
+        :type element: dict
+        :returns: str - XXX
+        """
+
         return "\t" * (len(element.get("complete_context")))
 
     def tokenize_identifier(self, element_name: str) -> list:
+        """
+        This method is XXX . It is a class method of DocumentFile.
+
+        :param element_name: XXX
+        :type element_name: str
+        :returns: list - XXX
+        """
+
         separated_words = self.nlp_utilities.use_segmenter(element_name)
         corrected_words = self.nlp_utilities.use_spell_checker(separated_words)
         separated_corrected_words = " ".join([word for word in corrected_words])
@@ -318,7 +437,7 @@ class DocumentFile:
             E.g. RoundBall -> This class represents a round ball.
         """
         if self.no_nlp:
-            return f"{tabs}This class XXX ."
+            return f"{tabs}This class XXX .\n"
 
         result = f"{tabs}This class represents"
 
@@ -345,9 +464,19 @@ class DocumentFile:
         else:
             result += " " + " ".join([word["word"] for word in tokenized_phrase]) + "s"
 
-        return result + "."
+        return result + ".\n"
 
     def describe_method(self, element: dict, tabs: str) -> str:
+        """
+        This method is XXX . It is a class method of DocumentFile.
+
+        :param element: XXX
+        :type element: dict
+        :param tabs: XXX
+        :type tabs: str
+        :returns: str - XXX
+        """
+
         element_name = element.get("name")
         result = f"{tabs}"
 
@@ -355,18 +484,18 @@ class DocumentFile:
             temp_name = element_name.lower()
             for prefab in PREFAB_METHOD_EXPLANATIONS:
                 if temp_name.startswith(prefab):
-                    result = f"\n{tabs} {PREFAB_METHOD_EXPLANATIONS[prefab]} "
+                    result = f"\n{tabs} {PREFAB_METHOD_EXPLANATIONS[prefab]}\n"
                     break
 
         if any(element_name.lower() == prefab for prefab in PREFAB_METHOD_DESCRIPTIONS):
             temp_name = element_name.lower()
             for prefab in PREFAB_METHOD_DESCRIPTIONS:
                 if temp_name == prefab:
-                    result += f"{PREFAB_METHOD_DESCRIPTIONS[prefab]}"
+                    result += f"{PREFAB_METHOD_DESCRIPTIONS[prefab]}\n"
                     break
 
         elif self.no_nlp:
-            result += "This method is XXX ."
+            result += "This method is XXX .\n"
 
         else:
             result += "This method "
@@ -386,6 +515,8 @@ class DocumentFile:
                 result += f"performs " \
                           f"{('an ' if any(tokenized_phrase[0]['word'][0] in vocal for vocal in ['a', 'e', 'i', 'o', 'u']) else 'a ')}" \
                           f"{' '.join([word['word'] for word in tokenized_phrase])}."
+
+            result += "\n"
 
         if element["genus"] == "class_method":
             result += " It is a"

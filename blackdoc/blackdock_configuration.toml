@@ -1,5 +1,5 @@
 [blackdoc]
-    ignored_directories = [
+    blacklist = [
         "venv",
         "virtualenv",
         "__pycache__",
@@ -15,5 +15,7 @@
         "*.egg-info",
         "html"
     ]
+
+    whitelist = []
 
     workers = 2

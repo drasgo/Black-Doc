@@ -4,6 +4,14 @@ from _version import __version__
 
 
 def read_requirements(filename: str):
+    """
+    This method is XXX . It is a global method.
+
+    :param filename: XXX
+    :type filename: str
+    :raises Exception: XXX
+    """
+
     req = []
     try:
         with open(filename, "r") as f:

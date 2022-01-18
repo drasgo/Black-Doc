@@ -1,6 +1,7 @@
 # Silences useless warnings
 import os
 import warnings
+from typing import Tuple
 
 warnings.filterwarnings("ignore")
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -37,7 +38,7 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
         help="If specified, creates a backup folder called 'blackdoc_backup' (if the folder backup does not exist, otherwise it exits) "
         "(Default True).",
         action="store_true",
-        default=False,
+        default=True,
         required=False,
     )
 
@@ -77,14 +78,32 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
     return cli_arg_parser
 
 
-def document_file(file_name: str, file_path: str):
+def document_file(file_name: str, file_path: str) -> Tuple[bool, str]:
+    """
+    This method is XXX . It is a global method.
+
+    :param file_name: XXX
+    :type file_name: str
+    :param file_path: XXX
+    :type file_path: str
+    :returns: Tuple[bool, str] - XXX
+    """
+
     log(f"Documenting {file_name}")
     docs = DocumentFile(file_name, file_path, nlp_utilities)
-    docs.document_file()
-    return
+    return docs.document_file(), file_path
 
 
 def start_blacking(no_black: bool, file_path: str=""):
+    """
+    This method is XXX . It is a global method.
+
+    :param no_black: XXX
+    :type no_black: bool
+    :param file_path: XXX. (Default="")
+    :type file_path: str
+    """
+
     if not no_black:
         print("Blacking")
         if file_path:
@@ -94,6 +113,13 @@ def start_blacking(no_black: bool, file_path: str=""):
 
 
 def create_backup(is_backup: bool):
+    """
+    This method is XXX . It is a global method.
+
+    :param is_backup: XXX
+    :type is_backup: bool
+    """
+
     log("Backing up repository")
     if is_backup:
         if os.path.exists(curr_dir + "/blackdoc_backup"):
@@ -102,6 +128,10 @@ def create_backup(is_backup: bool):
 
 
 def initialize_NLP():
+    """
+    This method is XXX . It is a global method.
+    """
+
     log("Loading NLP-based tools")
     NLPManager.register(
         "NLPUtilities",
@@ -141,6 +171,7 @@ def initialize_NLP():
 
 
 if __name__ == "__main__":
+    success = []
     curr_dir = os.getcwd()
     arg_parser = get_cli_argument_parser()
     cli_arguments = arg_parser.parse_args()
@@ -166,7 +197,7 @@ if __name__ == "__main__":
         )
 
         start_blacking(cli_arguments.no_black, curr_file)
-        document_file(filename, curr_file)
+        success.append(document_file(filename, curr_file))
 
     else:
         start_blacking(cli_arguments.no_black)
@@ -177,18 +208,36 @@ if __name__ == "__main__":
             if any(
                     subfolder == ignored
                     for subfolder in relative_path.split("/")
-                    for ignored in configs.ignored_directories
+                    for ignored in configs.blacklist
             ):
                 continue
 
-            for single_file in filenames:
-                if single_file.endswith(".py") and single_file.endswith("core.py"):
+            if not configs.whitelist or \
+                    (configs.whitelist and any(subfolder == allowed
+                                               for subfolder in relative_path.split("/")
+                                               for allowed in configs.whitelist
+                                               )):
+                for single_file in [file for file in filenames if file.endswith(".py")]:
                     files.append((single_file, os.path.join(dirpath, single_file)))
 
         if workers > 1:
             with multiprocessing.Pool(processes=workers) as pool:
-                _ = pool.starmap(document_file, files)
+                success = pool.starmap(document_file, files)
 
         else:
             for arg in files:
-                document_file(*arg)
+                success.append(document_file(*arg))
+
+    documented = 0
+    non_documented = []
+    for status, path in success:
+        if status:
+            documented += 1
+        else:
+            non_documented.append(path)
+
+    log(f"Successfully documented {documented} out of {len(success)} files found")
+    if non_documented:
+        log("Problem occured documenting the following files:")
+        for file in non_documented:
+            log(f"- {file}")

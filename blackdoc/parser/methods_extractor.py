@@ -29,6 +29,12 @@ class MethodsExtractor:
     """
 
     def __init__(self, parsed_functions):
+        """
+        This overrides the built-in object Initializator. It is a class method of MethodsExtractor.
+
+        :param parsed_functions: XXX
+        """
+
         self.functions = parsed_functions
 
     def collect_data(self) -> List[dict]:

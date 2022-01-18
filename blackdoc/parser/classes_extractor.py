@@ -1,6 +1,17 @@
 from typing import List
 
 
+CLASSES_RECORD_KEYS = [
+    "name",
+    "genus",
+    "documentation",
+    "start_line",
+    "end_line",
+    "inheritance",
+    "complete_context",
+]
+
+
 class ClassesExtractor:
     def __init__(self, parsed_classes, parsed_functions):
         self.classes = parsed_classes
@@ -17,25 +28,16 @@ class ClassesExtractor:
         for class_element in self.classes:
             class_model = dict()
 
-            class_model["name"] = class_element.get("name", "")
-            class_model["genus"] = class_element.get("genus", "")
-            class_model["documentation"] = class_element.get("documentation")
-            class_model["complete_context"] = class_element.get("complete_context")
-            class_model["inheritance"] = class_element["inheritance"]
-            class_model["start_line"], class_model["end_line"] = (
-                class_element.get("start_line"),
-                class_element.get("end_line"),
-            )
             class_model["total_lines"] = (
-                class_model["end_line"] - class_model["start_line"] + 1
+                class_element["end_line"] - class_element["start_line"] + 1
             )
 
             class_model["methods"] = self.collect_class_methods(
-                class_model.get("name", ""), self.functions
+                class_element.get("name", ""), self.functions
             )
 
             class_model["__init__"] = self.collect_method_body(
-                class_model.get("name", ""), "__init__", self.functions
+                class_element.get("name", ""), "__init__", self.functions
             )
 
             class_model["class_variables"] = self.get_variables(
@@ -44,11 +46,13 @@ class ClassesExtractor:
             class_model["object_variables"] = self.get_variables(
                 class_element, "object_variables"
             )
+            class_model.update({k: class_element.get(k, None) for k in CLASSES_RECORD_KEYS})
             class_data.append(class_model)
 
         return class_data
 
-    def get_variables(self, class_element: dict, cls_obj: str) -> list:
+    @staticmethod
+    def get_variables(class_element: dict, cls_obj: str) -> list:
         """Retrieves either "class_variables" or "object_variables" (depending on cls_obj) from the class_element.
 
         :param class_element: Parsepy element containing information about a single class
@@ -62,17 +66,17 @@ class ClassesExtractor:
             variables.append(element)
         return variables
 
+    @staticmethod
     def collect_method_body(
-        self, class_name: str, method_name: str, module_methods: List[dict]
+            class_name: str, method_name: str, module_methods: List[dict]
     ) -> dict:
         body = [method for method in module_methods
                 if method.get("parent_class") == class_name and
                 method.get("name") == method_name]
         return body[0] if body else {}
 
-    def collect_class_methods(
-        self, class_name: str, module_methods: List[dict]
-    ) -> List[str]:
+    @staticmethod
+    def collect_class_methods(class_name: str, module_methods: List[dict]) -> List[str]:
         """Retrieves the methods of the class.
 
         :param class_name: Name of the extracted class

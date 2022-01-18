@@ -16,6 +16,7 @@ METHODS_RECORD_KEYS = [
     "number_annotated_parameters",
     "parameters",
     "context",
+    "returns",
     "documentation",
     "complete_context",
 ]

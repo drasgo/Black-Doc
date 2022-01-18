@@ -91,21 +91,43 @@ class TensorNode(
 
     ## For common ops, we add utility methods to the Node object
     def __add__(self, other):
+        """
+        This describes how the object behaves when the sum operation is performed with it. It is a class method of TensorNode.
+
+        :param other: XXX
+        """
+
         if type(other) == float:
             other = TensorNode(np.asarray(other))
 
         return Add.do_forward(self, other)
 
     def __mul__(self, other):
+        """
+        This describes how the object behaves when the multiplication operation is performed with it. It is a class method of TensorNode.
+
+        :param other: XXX
+        """
+
         if type(other) == float:
             other = TensorNode(np.asarray(other))
 
         return Multiply.do_forward(self, other)
 
     def matmul(self, other):
+        """
+        This method is XXX . It is a class method of TensorNode.
+
+        :param other: XXX
+        """
+
         return MatrixMultiply.do_forward(self, other)
 
     def __str__(self):
+        """
+        This overrides the built-in (Informal) String representation of the object. It is a class method of TensorNode.
+        """
+
         return f"TensorNode[size {self.size()}, source {self.source.op if self.source is not None else None}]."
 
 
@@ -117,6 +139,14 @@ class OpNode:
     """
 
     def __init__(self, op, context, inputs):
+        """
+        This overrides the built-in object Initializator. It is a class method of OpNode.
+
+        :param op: XXX
+        :param context: XXX
+        :param inputs: XXX
+        """
+
         super().__init__()
 
         self.op = op
@@ -269,15 +299,30 @@ class Module:
     """
 
     def __init__(self):
+        """
+        This overrides the built-in object Initializator. It is a class method of Module.
+        """
+
         pass
 
     def forward(self):
+        """
+        This method is XXX . It is a class method of Module.
+        """
+
         pass
 
     # -- We alias the forward() method with the magic function __call__ this means that our module instance becomes
     #    callable, like a function. For instance if we make an MLP with `mlp = MLP(...)`, we can then call its
     #    forward function with `mlp(input)`.
     def __call__(self, *args, **kwargs):
+        """
+        This overrides the built-in behaviour when the object is called like a function. It is a static class method of Module.
+
+        :param args: XXX
+        :param self: XXX
+        """
+
         return self.forward(*args, **kwargs)
 
     def parameters(self):
@@ -301,11 +346,26 @@ class Add(Op):
 
     @staticmethod
     def forward(context, a, b):
+        """
+        This method is XXX . It is a static class method of Add.
+
+        :param context: XXX
+        :param a: XXX
+        :param b: XXX
+        """
+
         assert a.shape == b.shape, f"Arrays not the same sizes ({a.shape} {b.shape})."
         return a + b
 
     @staticmethod
     def backward(context, go):
+        """
+        This method is XXX . It is a static class method of Add.
+
+        :param context: XXX
+        :param go: XXX
+        """
+
         return go, go
 
 
@@ -316,6 +376,14 @@ class Multiply(Op):
 
     @staticmethod
     def forward(context, a, b):
+        """
+        This method is XXX . It is a static class method of Multiply.
+
+        :param context: XXX
+        :param a: XXX
+        :param b: XXX
+        """
+
         assert a.shape == b.shape, f"Arrays not the same sizes ({a.shape} {b.shape})."
 
         context["a"] = a
@@ -325,6 +393,13 @@ class Multiply(Op):
 
     @staticmethod
     def backward(context, go):
+        """
+        This method is XXX . It is a static class method of Multiply.
+
+        :param context: XXX
+        :param go: XXX
+        """
+
         a, b = context["a"], context["b"]
 
         return go * b, go * a
@@ -338,6 +413,14 @@ class MatrixMultiply(Op):
 
     @staticmethod
     def forward(context, a, b):
+        """
+        This method is XXX . It is a static class method of MatrixMultiply.
+
+        :param context: XXX
+        :param a: XXX
+        :param b: XXX
+        """
+
         context["a"] = a
         context["b"] = b
 
@@ -345,6 +428,13 @@ class MatrixMultiply(Op):
 
     @staticmethod
     def backward(context, go):
+        """
+        This method is XXX . It is a static class method of MatrixMultiply.
+
+        :param context: XXX
+        :param go: XXX
+        """
+
         a, b = context["a"], context["b"]
 
         return np.matmul(go, b.T), np.matmul(a.T, go)

@@ -10,7 +10,7 @@ def black_repo():
     if temp.stderr and not temp.stderr.startswith(b"All done!"):
         log(f"Error blacking the repository: {temp.stderr}!")
     else:
-        log("Finished formatting the repository!")
+        log(f"Finished formatting the repository!\n{temp.stderr}")
 
 
 def black_file(file_path: str):

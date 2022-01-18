@@ -1,7 +1,6 @@
 # Silences useless warnings
 import os
 import warnings
-from multiprocessing.managers import BaseManager
 
 warnings.filterwarnings("ignore")
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -14,32 +13,10 @@ import shutil
 from nlputilities.nlp import NLPUtilities
 
 from blackdoc.black import black_file, black_repo
-from blackdoc.configs import log
+from blackdoc.configs import log, Config, NLPManager
 from blackdoc.docstring import DocumentFile
 
 __version__ = "0.8.0"
-DEFAULT_WORKERS = 1
-IGNORED_DIRECTORIES = [
-    "blackdoc_backup",
-    "venv",
-    "virtualenv",
-    "__pycache__",
-    "build",
-    "dist",
-    "doc",
-    "docs",
-    "Docs",
-    ".git",
-    ".gitignore",
-    ".idea",
-    ".pytest_cache",
-    "*.egg-info",
-    "html",
-]
-
-
-class NLPManager(BaseManager):
-    pass
 
 
 def get_cli_argument_parser() -> argparse.ArgumentParser:
@@ -57,7 +34,7 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
     cli_arg_parser.add_argument(
         "-b",
         "--backup",
-        help="Creates a backup folder called 'blackdoc_backup' (if the folder backup does not exist, otherwise it exits) "
+        help="If specified, creates a backup folder called 'blackdoc_backup' (if the folder backup does not exist, otherwise it exits) "
         "(Default True).",
         action="store_true",
         default=False,
@@ -65,9 +42,19 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
     )
 
     cli_arg_parser.add_argument(
-        "-n",
+        "-nb",
         "--no_black",
-        help="Does not perform the black operations, and only generates the docstring templates (Default False).",
+        help="If specified, does not perform the black operations, and only generates the docstring templates (Default False).",
+        action="store_true",
+        default=True,
+        required=False,
+    )
+
+    cli_arg_parser.add_argument(
+        "-np",
+        "--no_nlp",
+        help="If specified, will not use any NLP-based tools (e.g. text segmentation) for describing a code element "
+             "(Ideal for reducing the startup and documenting process time) (Default False).",
         action="store_true",
         default=True,
         required=False,
@@ -95,6 +82,15 @@ def document_file(file_name: str, file_path: str):
     docs = DocumentFile(file_name, file_path, nlp_utilities)
     docs.document_file()
     return
+
+
+def start_blacking(no_black: bool, file_path: str=""):
+    if not no_black:
+        print("Blacking")
+        if file_path:
+            black_file(file_path)
+        else:
+            black_repo()
 
 
 def create_backup(is_backup: bool):
@@ -149,13 +145,13 @@ if __name__ == "__main__":
     arg_parser = get_cli_argument_parser()
     cli_arguments = arg_parser.parse_args()
 
-    workers = DEFAULT_WORKERS if not cli_arguments.workers else cli_arguments.workers
+    configs = Config.load_configs(curr_dir)
+    workers = cli_arguments.workers if cli_arguments.workers else configs.workers
 
     create_backup(cli_arguments.backup)
 
     # Initialize nlp utilities once for every worker
-    nlp_utilities = None
-    # nlp_utilities = initialize_NLP()
+    nlp_utilities = None if cli_arguments.no_nlp else initialize_NLP()
 
     if cli_arguments.file:
         curr_file = (
@@ -169,23 +165,19 @@ if __name__ == "__main__":
             else cli_arguments.file.split("/")[-1]
         )
 
-        if not cli_arguments.no_black:
-            black_file(curr_file)
-
+        start_blacking(cli_arguments.no_black, curr_file)
         document_file(filename, curr_file)
 
     else:
-        if not cli_arguments.no_black:
-            print("Blacking")
-            black_repo()
+        start_blacking(cli_arguments.no_black)
 
         files = []
         for dirpath, dirnames, filenames in os.walk(curr_dir, topdown=True):
             relative_path = dirpath.replace(curr_dir, "")
             if any(
-                subfolder == ignored
-                for subfolder in relative_path.split("/")
-                for ignored in IGNORED_DIRECTORIES
+                    subfolder == ignored
+                    for subfolder in relative_path.split("/")
+                    for ignored in configs.ignored_directories
             ):
                 continue
 

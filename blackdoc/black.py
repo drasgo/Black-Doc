@@ -11,10 +11,11 @@ def black_repo():
     temp = subprocess.run(
         "black .", stderr=subprocess.PIPE, stdout=subprocess.DEVNULL, shell=True
     )
-    if temp.stderr and not temp.stderr.startswith(b"All done!"):
-        log(f"Error blacking the repository: {temp.stderr}!")
+    report = temp.stderr.decode()
+    if report and not report.startswith("All done!"):
+        log(f"Error blacking the repository: {report}!")
     else:
-        log(f"Finished formatting the repository!\n{temp.stderr}")
+        log(f"Finished formatting the repository!\n{report}")
 
 
 def black_file(file_path: str):
@@ -31,7 +32,8 @@ def black_file(file_path: str):
         stdout=subprocess.DEVNULL,
         shell=True,
     )
-    if temp.stderr and not temp.stderr.startswith(b"All done!"):
-        log(f"Error blacking the file {file_path}")
+    report = temp.stderr.decode()
+    if report and not report.startswith("All done!"):
+        log(f"Error blacking the file {file_path}: {report}")
     else:
         log(f"Finished formatting the file {file_path}!")

@@ -18,7 +18,7 @@ from blackdoc.black import black_file, black_repo
 from blackdoc.configs import log, Config, NLPManager
 from blackdoc.docstring import DocumentFile
 
-__version__ = "1.0.1"
+__version__ = "1.0.3"
 
 
 def get_cli_argument_parser() -> argparse.ArgumentParser:
@@ -199,7 +199,7 @@ def main():
     create_backup(not cli_arguments.no_backup, curr_dir)
 
     # Initialize nlp utilities once for every worker
-    nlp_utilities = initialize_NLP(not cli_arguments.no_nlp)
+    nlp_utilities = initialize_NLP(cli_arguments.use_nlp)
 
     if cli_arguments.file:
         if not cli_arguments.file.endswith(".py"):

@@ -37,23 +37,27 @@ Moreover, there are some possible arguments that can be passed when executing bl
 
         optional arguments:
           -h, --help            show this help message and exit
-          -r REPO, --repo REPO  If specified, the current folder is going to be
+          -r, --repo            If specified, the current folder is going to be
                                 recursively black-ed and docstring-ed.
           -f FILE, --file FILE  If a single file is specified, then the 'black & doc'
                                 process is executed only on the specified (Python)
                                 file.
-          -b, --backup          If specified, creates a backup folder of the current directory 
-                                called 'blackdoc_backup' (if the backup folder already exists it 
-                                overwrites it).
-          -nb, --no_black       If specified, does not perform the black operations,
+          --no_backup           If specified, it does not create a backup folder of
+                                the current directory called 'blackdoc_backup' (NOTE:
+                                if the backup is created and 'blackdoc_backup' already
+                                exists, it overwrites it).
+          --no_black            If specified, does not perform the black operations,
                                 and only generates the docstring templates.
-          -np, --no_nlp         If specified, will not use any NLP-based tools (e.g.
-                                text segmentation) for describing a code element
-                                (Ideal for reducing the startup and documenting
-                                process time).
+          --use_nlp             If specified, it will use NLP-based tools (e.g. text
+                                segmentation) for describing the code elements in the
+                                docstrings. (Experimental. Increases startup time and
+                                overall processing time).
           -w WORKERS, --workers WORKERS
                                 Number of workers that document the files in the
-                                repository in parallel (Default=1).
+                                repository in parallel (Default=3).
+        
+        NOTE: Either -r/--repo or -f FILE/--file FILE need to be provided.
+
 
 NOTE: Either -r/--repo or -f FILE/--file FILE need to be provided.
 

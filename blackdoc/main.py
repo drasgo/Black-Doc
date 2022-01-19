@@ -18,7 +18,7 @@ from blackdoc.black import black_file, black_repo
 from blackdoc.configs import log, Config, NLPManager
 from blackdoc.docstring import DocumentFile
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 
 def get_cli_argument_parser() -> argparse.ArgumentParser:
@@ -38,6 +38,8 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
         '-r',
         "--repo",
         help="If specified, the current folder is going to be recursively black-ed and docstring-ed.",
+        action="store_true",
+        default=False,
         required=False,
     )
 
@@ -50,38 +52,35 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
     )
 
     cli_arg_parser.add_argument(
-        "-b",
-        "--backup",
-        help="If specified, creates a backup folder of the current directory called 'blackdoc_backup' "
-             "(if the backup folder already exists it overwrites it).",
+        "--no_backup",
+        help="If specified, it does not create a backup folder of the current directory called 'blackdoc_backup' "
+             "(NOTE: if the backup is created and 'blackdoc_backup' already exists, it overwrites it).",
         action="store_true",
-        default=True,
+        default=False,
         required=False,
     )
 
     cli_arg_parser.add_argument(
-        "-nb",
         "--no_black",
         help="If specified, does not perform the black operations, and only generates the docstring templates.",
         action="store_true",
-        default=True,
+        default=False,
         required=False,
     )
 
     cli_arg_parser.add_argument(
-        "-np",
-        "--no_nlp",
-        help="If specified, will not use any NLP-based tools (e.g. text segmentation) for describing a code element "
-             "(Ideal for reducing the startup and documenting process time).",
+        "--use_nlp",
+        help="If specified, it will use NLP-based tools (e.g. text segmentation) for describing the code elements in the "
+             "docstrings. (Experimental. Increases startup time and overall processing time).",
         action="store_true",
-        default=True,
+        default=False,
         required=False,
     )
 
     cli_arg_parser.add_argument(
         "-w",
         "--workers",
-        help="Number of workers that document the files in the repository in parallel (Default=1).",
+        help="Number of workers that document the files in the repository in parallel (Default=3).",
         type=int,
         required=False,
     )
@@ -144,11 +143,12 @@ def create_backup(is_backup: bool, working_dir: str):
         shutil.copytree(working_dir, working_dir + "/blackdoc_backup")
 
 
-def initialize_NLP():
+def initialize_NLP(is_nlp: bool):
     """
     This method is XXX . It is a global method.
     """
-
+    if not is_nlp:
+        return None
     log("Loading NLP-based tools")
     NLPManager.register(
         "NLPUtilities",
@@ -186,6 +186,7 @@ def initialize_NLP():
     log("NLP utilities loaded")
     return toolset
 
+
 def main():
     curr_dir = os.getcwd()
     success = []
@@ -195,10 +196,10 @@ def main():
     configs = Config.load_configs(curr_dir)
     workers = cli_arguments.workers if cli_arguments.workers else configs.workers
 
-    create_backup(cli_arguments.backup, curr_dir)
+    create_backup(not cli_arguments.no_backup, curr_dir)
 
     # Initialize nlp utilities once for every worker
-    nlp_utilities = None if cli_arguments.no_nlp else initialize_NLP()
+    nlp_utilities = initialize_NLP(not cli_arguments.no_nlp)
 
     if cli_arguments.file:
         if not cli_arguments.file.endswith(".py"):

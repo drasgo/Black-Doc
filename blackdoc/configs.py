@@ -59,7 +59,7 @@ class Config:
 
     ]
 
-    workers: int = 1
+    workers: int = 3
 
     @staticmethod
     def _set_values(configs: dict):

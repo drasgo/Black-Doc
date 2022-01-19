@@ -7,7 +7,6 @@ from blackdoc.parser.exceptions_extractor import ExceptionsExtractor
 import logging
 
 logger = logging.getLogger(__name__)
-SUPPORTED_LANGUAGES = ("java", "js", "py", "R", "rb", "go", "php", "cpp", "cp", "C")
 PREFAB_METHOD_EXPLANATIONS = {
     "get": "This is a getter method.",
     "add": "This is an adder method.",
@@ -45,7 +44,9 @@ PREFAB_METHOD_DESCRIPTIONS = {
 
 class DocumentFile:
     """
-    This class XXX .    Methods:
+    This class XXX .
+
+    Methods:
     :method add_docstring_2_code_element:
     :method get_tabs:
     :method _get_code:
@@ -211,10 +212,6 @@ class DocumentFile:
                            new_code[line_index:]
                 break
 
-        # print("final result in code")
-        # print("\n".join(new_code[start_line: start_line + 35]))
-        # input()
-
         return "\n".join(new_code)
 
     def generate_element_docstring(self, element: dict) -> str:
@@ -256,8 +253,6 @@ class DocumentFile:
         thread PROPN compound []
         manager NOUN ROOT [thread]
         """
-        # print("doing class " + class_element.get("name"))
-
         docstring = self.describe_class(class_element.get("name"), tabs)
         parameters = self.class_docstring_parameters(class_element, tabs)
         return docstring + parameters
@@ -272,27 +267,26 @@ class DocumentFile:
         :type tabs: str
         :returns: str - XXX
         """
-
         if not class_element["inheritance"]:
             info = ""
+
         else:
-            info = f"\n{tabs}Extends " \
+            info = f"\n{tabs}It extends the " \
                    f"{('class ' if len(class_element['inheritance']) == 1 else 'classes ')}" \
                    f"{', '.join(class_element['inheritance'])}.\n\n"
-        # print("post inheritance")
-        # print(info)
 
         if class_element.get("methods"):
             info += f"\n{tabs}Methods:\n"
             for method in set(class_element["methods"]):
-                info += f"{tabs}:method {method}:\n"
+                info += f"{tabs}:method {method}:\n XXX"
             info += "\n"
 
-        if class_element.get("class_variables"):
-            info += f"\n{tabs}Attributes:\n"
-            for attr in class_element["class_variables"]:
-                info += f"{tabs}:ivar {attr.get('name')}: \n"
-            info += "\n"
+        # Uncomment to add class attributes to the generated docstring for classes
+        # if class_element.get("class_variables"):
+        #     info += f"\n{tabs}Attributes:\n"
+        #     for attr in class_element["class_variables"]:
+        #         info += f"{tabs}:ivar {attr.get('name')}: XXX\n"
+        #     info += "\n"
 
         if class_element["__init__"]:
             if class_element["__init__"]["documentation"]:
@@ -322,8 +316,6 @@ class DocumentFile:
         :type tabs: str
         :returns: str - XXX
         """
-
-        # print("doing method " + method_element.get("name"))
         method_exceptions = []
         if exceptions_info:
             method_exceptions = [
@@ -352,7 +344,6 @@ class DocumentFile:
         :type tabs: str
         :returns: str - XXX
         """
-
         result = ""
         arguments = []
 
@@ -395,7 +386,6 @@ class DocumentFile:
         :type tabs: str
         :returns: str - XXX
         """
-
         result = ""
         for exception in exceptions:
             result += f"\n{tabs}:raises {', '.join([exception['name']])}: XXX"
@@ -431,7 +421,7 @@ class DocumentFile:
             [separated_corrected_words]
         )[0]
 
-    def describe_class(self, element_name: str, tabs: str):
+    def describe_class(self, element_name: str, tabs: str) -> str:
         """
             Uses the class name to create a 'description' of the class.
             E.g. RoundBall -> This class represents a round ball.

@@ -3,7 +3,7 @@ from typing import List
 
 import toml
 
-CONFIGURATION_NAME = "blackdock_configuration.toml"
+CONFIGURATION_NAME = "blackdoc_configuration.toml"
 
 
 def log(data: str = ""):
@@ -19,7 +19,8 @@ def log(data: str = ""):
 
 class NLPManager(BaseManager):
     """
-    This class XXX .    Extends class BaseManager.
+    This class XXX .
+    Extends class BaseManager.
     """
 
     pass
@@ -27,18 +28,11 @@ class NLPManager(BaseManager):
 
 class Config:
     """
-    This class XXX .    Methods:
+    This class XXX .
+
+    Methods:
     :method load_configs:
     :method _set_values:
-
-
-    Attributes:
-    :ivar None: 
-    :ivar None: 
-    :ivar None: 
-    :ivar None: 
-    :ivar None: 
-    :ivar None:
     """
 
     blacklist: List[str] = [
@@ -69,10 +63,10 @@ class Config:
 
     @staticmethod
     def _set_values(configs: dict):
-        """Load all the values from the blackdock_configuration.toml file, and use the default values for everything is not
+        """Load all the values from the blackdoc_configuration.toml file, and use the default values for everything is not
         present in the configuration file.
 
-        :param configs: The information deserialized from the blackdock_configuration.toml file
+        :param configs: The information deserialized from the blackdoc_configuration.toml file
         :type configs: dict
         """
         # Load miscellaneous

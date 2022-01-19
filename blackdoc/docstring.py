@@ -474,18 +474,18 @@ class DocumentFile:
             temp_name = element_name.lower()
             for prefab in PREFAB_METHOD_EXPLANATIONS:
                 if temp_name.startswith(prefab):
-                    result = f"\n{tabs} {PREFAB_METHOD_EXPLANATIONS[prefab]}\n"
+                    result = f"\n{tabs} {PREFAB_METHOD_EXPLANATIONS[prefab]}"
                     break
 
         if any(element_name.lower() == prefab for prefab in PREFAB_METHOD_DESCRIPTIONS):
             temp_name = element_name.lower()
             for prefab in PREFAB_METHOD_DESCRIPTIONS:
                 if temp_name == prefab:
-                    result += f"{PREFAB_METHOD_DESCRIPTIONS[prefab]}\n"
+                    result += f"{PREFAB_METHOD_DESCRIPTIONS[prefab]}"
                     break
 
         elif self.no_nlp:
-            result += "This method is XXX .\n"
+            result += "This method is XXX ."
 
         else:
             result += "This method "
@@ -506,10 +506,8 @@ class DocumentFile:
                           f"{('an ' if any(tokenized_phrase[0]['word'][0] in vocal for vocal in ['a', 'e', 'i', 'o', 'u']) else 'a ')}" \
                           f"{' '.join([word['word'] for word in tokenized_phrase])}."
 
-            result += "\n"
-
         if element["genus"] == "class_method":
-            result += f"{tabs}It is a"
+            result += f" It is a"
 
             if (
                 not element["parameters"]
@@ -519,4 +517,4 @@ class DocumentFile:
 
             return f"{result} class method of {element['context']['context_name']}.\n"
         else:
-            return f"{result}{tabs}It is a global method.\n"
+            return f"{result} It is a global method.\n"

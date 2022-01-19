@@ -18,7 +18,7 @@ from blackdoc.black import black_file, black_repo
 from blackdoc.configs import log, Config, NLPManager
 from blackdoc.docstring import DocumentFile
 
-__version__ = "1.0.3"
+__version__ = "1.0.5"
 
 
 def get_cli_argument_parser() -> argparse.ArgumentParser:

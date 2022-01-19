@@ -278,7 +278,7 @@ class DocumentFile:
         if class_element.get("methods"):
             info += f"\n{tabs}Methods:\n"
             for method in set(class_element["methods"]):
-                info += f"{tabs}:method {method}:\n XXX"
+                info += f"{tabs}:method {method}:XXX\n"
             info += "\n"
 
         # Uncomment to add class attributes to the generated docstring for classes
@@ -509,7 +509,7 @@ class DocumentFile:
             result += "\n"
 
         if element["genus"] == "class_method":
-            result += " It is a"
+            result += f"{tabs}It is a"
 
             if (
                 not element["parameters"]
@@ -519,4 +519,4 @@ class DocumentFile:
 
             return f"{result} class method of {element['context']['context_name']}.\n"
         else:
-            return f"{result} It is a global method.\n"
+            return f"{result}{tabs}It is a global method.\n"

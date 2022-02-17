@@ -474,7 +474,7 @@ class DocumentFile:
             temp_name = element_name.lower()
             for prefab in PREFAB_METHOD_EXPLANATIONS:
                 if temp_name.startswith(prefab):
-                    result = f"\n{tabs} {PREFAB_METHOD_EXPLANATIONS[prefab]}"
+                    result = f"\n{tabs} {PREFAB_METHOD_EXPLANATIONS[prefab]} "
                     break
 
         if any(element_name.lower() == prefab for prefab in PREFAB_METHOD_DESCRIPTIONS):

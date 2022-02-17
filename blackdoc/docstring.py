@@ -278,7 +278,7 @@ class DocumentFile:
         if class_element.get("methods"):
             info += f"\n{tabs}Methods:\n"
             for method in set(class_element["methods"]):
-                info += f"{tabs}:method {method}:XXX\n"
+                info += f"{tabs}:method {method}: XXX\n"
             info += "\n"
 
         # Uncomment to add class attributes to the generated docstring for classes

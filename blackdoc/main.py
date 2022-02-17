@@ -18,7 +18,7 @@ from blackdoc.black import black_file, black_repo
 from blackdoc.configs import log, Config, NLPManager
 from blackdoc.docstring import DocumentFile
 
-__version__ = "1.0.6"
+__version__ = "1.0.7"
 
 
 def get_cli_argument_parser() -> argparse.ArgumentParser:
@@ -138,9 +138,9 @@ def create_backup(is_backup: bool, working_dir: str):
 
     log("Backing up repository")
     if is_backup:
-        if os.path.exists(working_dir + "/blackdoc_backup"):
-            shutil.rmtree(working_dir + "/blackdoc_backup")
-        shutil.copytree(working_dir, working_dir + "/blackdoc_backup")
+        if os.path.exists(working_dir + Config.backup_folder):
+            shutil.rmtree(working_dir + Config.backup_folder)
+        shutil.copytree(working_dir, working_dir + Config.backup_folder)
 
 
 def initialize_NLP(is_nlp: bool):

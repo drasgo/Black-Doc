@@ -20,6 +20,7 @@ def log(data: str = "", level: str=""):
     else:
         print(data)
 
+
 class NLPManager(BaseManager):
     """
     This class XXX .
@@ -62,6 +63,8 @@ class Config:
 
     ]
 
+    backup_folder: str = "/blackdoc_backup/"
+
     workers: int = 3
 
     @staticmethod
@@ -76,12 +79,13 @@ class Config:
         miscellaneous = configs.get("blackdoc", {})
 
         Config.workers = miscellaneous.get("workers", Config.workers)
-        Config.blacklist = miscellaneous.get(
-            "blacklist", Config.blacklist
-        )
         Config.whitelist = miscellaneous.get(
             "whitelist", Config.whitelist
         )
+        Config.backup_folder = miscellaneous.get("backup_folder", Config.backup_folder)
+        Config.blacklist = set(
+            miscellaneous.get("blacklist", Config.blacklist) +
+            [Config.backup_folder])
 
     @staticmethod
     def load_configs(configuration_paths: str):

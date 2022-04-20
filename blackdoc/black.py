@@ -15,10 +15,7 @@ def black_repo():
         shell=True,
     )
     report = temp.stderr.decode()
-    if report and not report.startswith("All done!"):
-        log(f"Error blacking the repository: {report}!")
-    else:
-        log(f"Finished formatting the repository!\n{report}")
+    log(f"Finished formatting the repository!\n{report}")
 
 
 def black_file(file_path: str):

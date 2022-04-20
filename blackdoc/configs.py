@@ -6,7 +6,7 @@ import toml
 CONFIGURATION_NAME = "blackdoc_configuration.toml"
 
 
-def log(data: str = "", level: str = ""):
+def log(data: str = "", level: str = "INFO"):
     """
     This method is XXX . It is a global method.
 
@@ -15,10 +15,7 @@ def log(data: str = "", level: str = ""):
     :param level: XXX. (Default="")
     :type level: str
     """
-    if level:
-        print(f"[{level.upper()}]: {data}")
-    else:
-        print(data)
+    print(f"[{level.upper()}]: {data}")
 
 
 class NLPManager(BaseManager):
@@ -98,7 +95,7 @@ class Config:
             log(
                 f"Error while trying to locate the configuration file {configuration_paths}. "
                 f"Using default configurations.",
-                level="info",
+                level="warning",
             )
             config_file = {}
         Config._set_values(config_file)

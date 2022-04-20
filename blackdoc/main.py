@@ -21,7 +21,7 @@ from blackdoc.black import black_file, black_repo
 from blackdoc.configs import log, Config, NLPManager
 from blackdoc.docstring import DocumentFile
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 
 def get_cli_argument_parser() -> argparse.ArgumentParser:
@@ -128,7 +128,7 @@ def start_blacking(no_black: bool, file_path: str = ""):
     """
 
     if not no_black:
-        log("Blacking")
+        log("\nBlacking")
         if file_path:
             black_file(file_path)
         else:
@@ -146,7 +146,7 @@ def start_isorting(no_isort: bool, file_paths: Union[str, List[str]] = ""):
     """
 
     if not no_isort:
-        log("ISorting")
+        log("\nISorting")
         file_paths = file_paths if isinstance(file_paths, list) else [file_paths]
         for path in file_paths:
             isort_file(path)
@@ -162,7 +162,7 @@ def create_backup(is_backup: bool, working_dir: str):
     :type working_dir: str
     """
 
-    log("Backing up repository")
+    log("\nBacking up repository")
     if is_backup:
         if os.path.exists(working_dir + Config.backup_folder):
             shutil.rmtree(working_dir + Config.backup_folder)
@@ -175,7 +175,7 @@ def initialize_NLP(is_nlp: bool):
     """
     if not is_nlp:
         return None
-    log("Loading NLP-based tools")
+    log("\nLoading NLP-based tools")
     NLPManager.register(
         "NLPUtilities",
         NLPUtilities,
@@ -233,7 +233,7 @@ def update_gitignore(backup: bool, curr_dir: str):
                 ignored_elements = fp.readlines()
 
             if not any(backup_folder in element for element in ignored_elements):
-                log(f"Updating .gitignore to ignore {Config.backup_folder}.")
+                log(f"\nUpdating .gitignore to ignore {Config.backup_folder}.")
                 ignored_elements.append(backup_folder)
 
                 with open(gitignore_file, "w") as fp:
@@ -263,7 +263,7 @@ def main():
 
     if cli_arguments.file:
         if not cli_arguments.file.endswith(".py"):
-            log("Only Python files are supported!")
+            log("\nOnly Python files are supported!", "error")
             exit()
 
         curr_file = os.path.join(curr_dir, cli_arguments.file)
@@ -324,9 +324,9 @@ def main():
         else:
             non_documented.append(path)
 
-    log(f"Successfully documented {documented} out of {len(success)} files found")
+    log(f"\nSuccessfully documented {documented} out of {len(success)} files found")
     if non_documented:
-        log("Problem occured documenting the following files:")
+        log("\nProblem occured documenting the following files:", "warning")
         for file in non_documented:
             log(f"- {file}")
 

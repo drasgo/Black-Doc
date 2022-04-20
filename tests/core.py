@@ -7,13 +7,12 @@ This module contains the core components of the autodiff system: the two types o
 The main algorithm of backpropagation is implementated recursively in the backward functions of the nodes.
 """
 
+
 @something
 @somemmmmmmm
 @ahahaahah
 # ciao
-class TensorNode(
-    ciao
-):
+class TensorNode(ciao):
     """
     Represents a value node in the computation graph: a tensor value linked to its
     the computational history
@@ -157,11 +156,11 @@ class OpNode:
 
     def backward(self):
         """
-         Walk backwards down the graph to compute the gradients.
+        Walk backwards down the graph to compute the gradients.
 
-         Note that this should be a breadth-first walk. When we get to a particular op, we need to be sure that all its
-         outputs have already been visited.
-         """
+        Note that this should be a breadth-first walk. When we get to a particular op, we need to be sure that all its
+        outputs have already been visited.
+        """
         # print(f'Backward of op {self.op}.')
 
         # extract the gradients over the outputs (these have been computed already)

@@ -1,5 +1,6 @@
+astroid
+dataclasses_json
 spacy
 nltk
 black
-PythonParser@git+https://github.com/drasgo/PythonParser.git#egg=PythonParser-1.0.4
-NLPUtilities@git+https://github.com/drasgo/NLPUtilities.git#egg=NLPUtilities-1.0.0
+isort

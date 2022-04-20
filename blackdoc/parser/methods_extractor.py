@@ -73,7 +73,6 @@ class MethodsExtractor:
                     )
                     f["number_annotated_parameters"] = 0
         module_methods = [
-            {k: f.get(k, None) for k in METHODS_RECORD_KEYS}
-            for f in self.functions
+            {k: f.get(k, None) for k in METHODS_RECORD_KEYS} for f in self.functions
         ]
         return module_methods

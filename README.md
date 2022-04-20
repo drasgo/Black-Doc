@@ -7,6 +7,8 @@ in every Python file (or in the specified file) in the repository, if absent, fo
 To install the repository you just need to clone in on your computer 
     
         git clone https://github.com/drasgo/Black-Doc.git
+        cd Black-Doc
+        python3 -m pip install -r requirements.txt --user
 
 then either create your own wheel package and install it
 

@@ -38,8 +38,7 @@ class FileParser:
         :returns: bool - XXX
         """
 
-        return True if self.code and \
-                       not self.parser.parsing_status() else False
+        return True if self.code and not self.parser.parsing_status() else False
 
     def get_classes(self) -> List[dict]:
         """

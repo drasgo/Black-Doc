@@ -1,14 +1,17 @@
-# Silences useless warnings
+import concurrent
 import os
 import sys
 import warnings
-from typing import Tuple
+from concurrent.futures import ProcessPoolExecutor
+from typing import Tuple, Union, List
 
+from blackdoc.isort import isort_file
+
+# Silences useless warnings
 warnings.filterwarnings("ignore")
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import argparse
-import multiprocessing
 
 import shutil
 
@@ -18,7 +21,7 @@ from blackdoc.black import black_file, black_repo
 from blackdoc.configs import log, Config, NLPManager
 from blackdoc.docstring import DocumentFile
 
-__version__ = "1.0.7"
+__version__ = "1.1.0"
 
 
 def get_cli_argument_parser() -> argparse.ArgumentParser:
@@ -35,7 +38,7 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
 
     group = cli_arg_parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
-        '-r',
+        "-r",
         "--repo",
         help="If specified, the current folder is going to be recursively black-ed and docstring-ed.",
         action="store_true",
@@ -47,14 +50,14 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
         "-f",
         "--file",
         help="If a single file is specified, then the 'black & doc' process is executed only on the specified "
-             "(Python) file.",
+        "(Python) file.",
         required=False,
     )
 
     cli_arg_parser.add_argument(
         "--no_backup",
         help="If specified, it does not create a backup folder of the current directory called 'blackdoc_backup' "
-             "(NOTE: if the backup is created and 'blackdoc_backup' already exists, it overwrites it).",
+        "(NOTE: if the backup is created and 'blackdoc_backup' already exists, it overwrites it).",
         action="store_true",
         default=False,
         required=False,
@@ -62,7 +65,15 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
 
     cli_arg_parser.add_argument(
         "--no_black",
-        help="If specified, does not perform the black operations, and only generates the docstring templates.",
+        help="If specified, does not perform the black operation. More info at: https://github.com/psf/black .",
+        action="store_true",
+        default=False,
+        required=False,
+    )
+
+    cli_arg_parser.add_argument(
+        "--no_isort",
+        help="If specified, does not perform the isort operations, More info at: https://github.com/PyCQA/isort .",
         action="store_true",
         default=False,
         required=False,
@@ -71,7 +82,7 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
     cli_arg_parser.add_argument(
         "--use_nlp",
         help="If specified, it will use NLP-based tools (e.g. text segmentation) for describing the code elements in the "
-             "docstrings. (Experimental. Increases startup time and overall processing time).",
+        "docstrings. (Experimental. Increases startup time and overall processing time).",
         action="store_true",
         default=False,
         required=False,
@@ -91,24 +102,22 @@ def get_cli_argument_parser() -> argparse.ArgumentParser:
     return cli_arg_parser
 
 
-def document_file(file_name: str, file_path: str, nlp_utilities) -> Tuple[bool, str]:
+def document_file(nlp_utilities, file_path: str) -> Tuple[bool, str]:
     """
     This method is XXX . It is a global method.
 
-    :param file_name: XXX
-    :type file_name: str
     :param file_path: XXX
     :type file_path: str
     :param nlp_utilities:
     :returns: Tuple[bool, str] - XXX
     """
-
+    file_name = file_path.split("/")[-1]
     log(f"Documenting {file_name}")
     docs = DocumentFile(file_name, file_path, nlp_utilities)
     return docs.document_file(), file_path
 
 
-def start_blacking(no_black: bool, file_path: str=""):
+def start_blacking(no_black: bool, file_path: str = ""):
     """
     This method is XXX . It is a global method.
 
@@ -124,6 +133,23 @@ def start_blacking(no_black: bool, file_path: str=""):
             black_file(file_path)
         else:
             black_repo()
+
+
+def start_isorting(no_isort: bool, file_paths: Union[str, List[str]] = ""):
+    """
+    This method is XXX . It is a global method.
+
+    :param no_isort: XXX
+    :type no_isort: bool
+    :param file_paths: XXX. (Default="")
+    :type file_paths: Union[str, List[str]]
+    """
+
+    if not no_isort:
+        log("ISorting")
+        file_paths = file_paths if isinstance(file_paths, list) else [file_paths]
+        for path in file_paths:
+            isort_file(path)
 
 
 def create_backup(is_backup: bool, working_dir: str):
@@ -187,7 +213,40 @@ def initialize_NLP(is_nlp: bool):
     return toolset
 
 
+def update_gitignore(backup: bool, curr_dir: str):
+    """
+    This method is XXX . It is a global method.
+
+    :param backup: XXX
+    :type backup: bool
+    :param curr_dir: XXX
+    :type curr_dir: str
+    """
+
+    if backup:
+        gitignore_file = os.path.join(curr_dir, ".gitignore")
+        backup_folder = Config.backup_folder[1:]
+
+        if os.path.exists(gitignore_file):
+
+            with open(gitignore_file, "r") as fp:
+                ignored_elements = fp.readlines()
+
+            if not any(backup_folder in element for element in ignored_elements):
+                log(f"Updating .gitignore to ignore {Config.backup_folder}.")
+                ignored_elements.append(backup_folder)
+
+                with open(gitignore_file, "w") as fp:
+                    fp.writelines(ignored_elements)
+
+
 def main():
+    """
+    This method is XXX . It is a global method.
+
+    :raises Exception: XXX
+    """
+
     curr_dir = os.getcwd()
     success = []
     arg_parser = get_cli_argument_parser()
@@ -196,6 +255,7 @@ def main():
     configs = Config.load_configs(curr_dir)
     workers = cli_arguments.workers if cli_arguments.workers else configs.workers
 
+    update_gitignore(not cli_arguments.no_backup, curr_dir)
     create_backup(not cli_arguments.no_backup, curr_dir)
 
     # Initialize nlp utilities once for every worker
@@ -206,48 +266,55 @@ def main():
             log("Only Python files are supported!")
             exit()
 
-        curr_file = (
-            f"{curr_dir}/{cli_arguments.file}"
-            if "/" not in cli_arguments.file
-            else cli_arguments.file
-        )
-        filename = (
-            cli_arguments.file
-            if "/" not in cli_arguments.file
-            else cli_arguments.file.split("/")[-1]
-        )
+        curr_file = os.path.join(curr_dir, cli_arguments.file)
 
-        success.append(document_file(filename, curr_file, nlp_utilities))
+        success.append(document_file(nlp_utilities, curr_file))
         start_blacking(cli_arguments.no_black, curr_file)
+        start_isorting(cli_arguments.no_isort, curr_file)
 
     else:
         files = []
         for dirpath, dirnames, filenames in os.walk(curr_dir, topdown=True):
             relative_path = dirpath.replace(curr_dir, "")
             if any(
-                    subfolder == ignored
-                    for subfolder in relative_path.split("/")
-                    for ignored in configs.blacklist
+                subfolder == ignored
+                for subfolder in relative_path.split("/")
+                for ignored in configs.blacklist
             ):
                 continue
 
-            if not configs.whitelist or \
-                    (configs.whitelist and any(subfolder == allowed
-                                               for subfolder in relative_path.split("/")
-                                               for allowed in configs.whitelist
-                                               )):
+            if not configs.whitelist or (
+                configs.whitelist
+                and any(
+                    subfolder == allowed
+                    for subfolder in relative_path.split("/")
+                    for allowed in configs.whitelist
+                )
+            ):
                 for single_file in [file for file in filenames if file.endswith(".py")]:
-                    files.append((single_file, os.path.join(dirpath, single_file), nlp_utilities))
+                    files.append(os.path.join(dirpath, single_file))
 
         if workers > 1:
-            with multiprocessing.Pool(processes=workers) as pool:
-                success = pool.starmap(document_file, files)
+            with ProcessPoolExecutor(max_workers=workers) as executor:
+                jobs = {
+                    executor.submit(document_file, nlp_utilities, file_path): file_path
+                    for file_path in files
+                }
+
+            for future in concurrent.futures.as_completed(jobs):
+                path = jobs[future]
+                try:
+                    status, _ = future.result()
+                except Exception:
+                    status = False
+                success.append((status, path))
 
         else:
-            for arg in files:
-                success.append(document_file(*arg))
+            for file in files:
+                success.append(document_file(nlp_utilities, file))
 
         start_blacking(cli_arguments.no_black)
+        start_isorting(cli_arguments.no_isort, files)
 
     documented = 0
     non_documented = []
@@ -262,6 +329,7 @@ def main():
         log("Problem occured documenting the following files:")
         for file in non_documented:
             log(f"- {file}")
+
 
 if __name__ == "__main__":
     main()

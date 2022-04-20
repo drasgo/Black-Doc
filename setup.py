@@ -22,11 +22,18 @@ def read_requirements(filename: str):
         print("Could not open the file: {}".format(ex))
     return req
 
+
 curr_dir = os.getcwd()
 install_requires = read_requirements(os.path.abspath("./requirements.txt"))
-install_requires = [f"PythonParser@git+https://github.com/drasgo/PythonParser.git#egg=PythonParser-1.0.4"] + \
-                    [f"NLPUtilities@git+https://github.com/drasgo/NLPUtilities.git#egg=NLPUtilities-1.0.0"] + \
-                    [req for req in install_requires if not req.startswith("./external_packages")]
+install_requires = (
+    [
+        f"PythonParser@git+https://github.com/drasgo/PythonParser.git#egg=PythonParser-1.0.4"
+    ]
+    + [
+        f"NLPUtilities@git+https://github.com/drasgo/NLPUtilities.git#egg=NLPUtilities-1.0.0"
+    ]
+    + [req for req in install_requires if not req.startswith("./external_packages")]
+)
 
 setup(
     name="BlackDoc",
@@ -35,7 +42,7 @@ setup(
     author_email="tommasocastiglione@gmail.com",
     url="https://github.com/drasgo/Black-Doc",
     description="A tool combining Black and an automatic docstring template generation for every non-documented function, "
-                "following Sphinx style",
+    "following Sphinx style",
     install_requires=install_requires,
     packages=find_packages(),
     classifiers=[

@@ -9,7 +9,10 @@ def black_repo():
     """
 
     temp = subprocess.run(
-        f'black --extend-exclude="{Config.backup_folder}" .', stderr=subprocess.PIPE, stdout=subprocess.DEVNULL, shell=True
+        f'black --extend-exclude="{Config.backup_folder}" .',
+        stderr=subprocess.PIPE,
+        stdout=subprocess.DEVNULL,
+        shell=True,
     )
     report = temp.stderr.decode()
     if report and not report.startswith("All done!"):

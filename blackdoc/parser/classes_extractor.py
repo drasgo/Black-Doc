@@ -68,7 +68,9 @@ class ClassesExtractor:
             class_model["object_variables"] = self.get_variables(
                 class_element, "object_variables"
             )
-            class_model.update({k: class_element.get(k, None) for k in CLASSES_RECORD_KEYS})
+            class_model.update(
+                {k: class_element.get(k, None) for k in CLASSES_RECORD_KEYS}
+            )
             class_data.append(class_model)
 
         return class_data
@@ -90,7 +92,7 @@ class ClassesExtractor:
 
     @staticmethod
     def collect_method_body(
-            class_name: str, method_name: str, module_methods: List[dict]
+        class_name: str, method_name: str, module_methods: List[dict]
     ) -> dict:
         """
         This method is XXX . It is a static class method of ClassesExtractor.
@@ -104,9 +106,12 @@ class ClassesExtractor:
         :returns: dict - XXX
         """
 
-        body = [method for method in module_methods
-                if method.get("parent_class") == class_name and
-                method.get("name") == method_name]
+        body = [
+            method
+            for method in module_methods
+            if method.get("parent_class") == class_name
+            and method.get("name") == method_name
+        ]
         return body[0] if body else {}
 
     @staticmethod

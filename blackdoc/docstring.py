@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 PREFAB_METHOD_EXPLANATIONS = {
     "get": "This is a getter method.",
     "add": "This is an adder method.",
-    "set": "This is a setter method."
+    "set": "This is a setter method.",
 }
 
 PREFAB_METHOD_DESCRIPTIONS = {
@@ -141,27 +141,38 @@ class DocumentFile:
         This method is XXX . It is a class method of DocumentFile.
         """
 
-        if not self.parse_code() or \
-                (not self.parser.get_classes() and not self.parser.get_functions()):
+        if not self.parse_code() or (
+            not self.parser.get_classes() and not self.parser.get_functions()
+        ):
             return False
 
-        self.classes = ClassesExtractor(self.parser.get_classes(), self.parser.get_functions()).collect_data()
+        self.classes = ClassesExtractor(
+            self.parser.get_classes(), self.parser.get_functions()
+        ).collect_data()
         self.functions = MethodsExtractor(self.parser.get_functions()).collect_data()
-        self.exceptions = ExceptionsExtractor(self.parser.get_exceptions()).collect_data()
+        self.exceptions = ExceptionsExtractor(
+            self.parser.get_exceptions()
+        ).collect_data()
 
         self.sorted_elements = sorted(
             self.classes + self.functions,
-            key=lambda elem: elem.get("start_line"), reverse=True
+            key=lambda elem: elem.get("start_line"),
+            reverse=True,
         )
 
         for elem_index in range(len(self.sorted_elements)):
             current_elem = self.sorted_elements[elem_index]
-            if (elem_index == 0 or
-                not any(current_elem.get("start_line") == prev_elem.get("start_line")
-                        for prev_elem in self.sorted_elements[:elem_index])) and \
-                    not current_elem.get("documentation").strip():
+            if (
+                elem_index == 0
+                or not any(
+                    current_elem.get("start_line") == prev_elem.get("start_line")
+                    for prev_elem in self.sorted_elements[:elem_index]
+                )
+            ) and not current_elem.get("documentation").strip():
                 new_docstring = self.generate_element_docstring(current_elem)
-                self.code = self.add_docstring_2_code_element(new_docstring, current_elem.get("start_line"))
+                self.code = self.add_docstring_2_code_element(
+                    new_docstring, current_elem.get("start_line")
+                )
 
         self.code = self.cleanup_code(self.code)
         if not self.parse_code():
@@ -191,25 +202,41 @@ class DocumentFile:
                 first_line = line_index
                 continue
 
-            if first_line != -1 and not existing_docstring and \
-                any(new_code[line_index].strip().startswith(mark) and
-                    new_code[line_index].strip().count(mark) % 2 != 0
-                    for mark in ("'''", '"""')):
+            if (
+                first_line != -1
+                and not existing_docstring
+                and any(
+                    new_code[line_index].strip().startswith(mark)
+                    and new_code[line_index].strip().count(mark) % 2 != 0
+                    for mark in ("'''", '"""')
+                )
+            ):
                 existing_docstring = True
                 continue
 
-            if first_line != -1 and existing_docstring and \
-                    any(new_code[line_index].strip().endswith(mark) and
-                        new_code[line_index].strip().count(mark) % 2 != 0
-                        for mark in ("'''", '"""')):
+            if (
+                first_line != -1
+                and existing_docstring
+                and any(
+                    new_code[line_index].strip().endswith(mark)
+                    and new_code[line_index].strip().count(mark) % 2 != 0
+                    for mark in ("'''", '"""')
+                )
+            ):
                 existing_docstring = False
                 continue
 
-            if first_line != -1 and not existing_docstring and new_code[line_index].strip():
-                new_code = new_code[:first_line + 1] + \
-                           docstring.split("\n") + \
-                           [""] + \
-                           new_code[line_index:]
+            if (
+                first_line != -1
+                and not existing_docstring
+                and new_code[line_index].strip()
+            ):
+                new_code = (
+                    new_code[: first_line + 1]
+                    + docstring.split("\n")
+                    + [""]
+                    + new_code[line_index:]
+                )
                 break
 
         return "\n".join(new_code)
@@ -229,12 +256,12 @@ class DocumentFile:
             documentation = self.generate_class_documentation(element, tabs)
         else:
             documentation = self.generate_method_documentation(
-                            element,
-                            exceptions_info=self.exceptions,
-                            tabs=tabs
-                        )
+                element, exceptions_info=self.exceptions, tabs=tabs
+            )
 
-        return f"{tabs}{quote_marks}\n{tabs}{documentation.strip()}\n{tabs}{quote_marks}"
+        return (
+            f"{tabs}{quote_marks}\n{tabs}{documentation.strip()}\n{tabs}{quote_marks}"
+        )
 
     # Class documentation
 
@@ -271,9 +298,11 @@ class DocumentFile:
             info = ""
 
         else:
-            info = f"\n{tabs}It extends the " \
-                   f"{('class ' if len(class_element['inheritance']) == 1 else 'classes ')}" \
-                   f"{', '.join(class_element['inheritance'])}.\n\n"
+            info = (
+                f"\n{tabs}It extends the "
+                f"{('class ' if len(class_element['inheritance']) == 1 else 'classes ')}"
+                f"{', '.join(class_element['inheritance'])}.\n\n"
+            )
 
         if class_element.get("methods"):
             info += f"\n{tabs}Methods:\n"
@@ -290,20 +319,21 @@ class DocumentFile:
 
         if class_element["__init__"]:
             if class_element["__init__"]["documentation"]:
-                for line in class_element["__init__"]["documentation"].strip().split("\n"):
+                for line in (
+                    class_element["__init__"]["documentation"].strip().split("\n")
+                ):
                     info += f"{tabs}{line.strip()}\n"
             else:
-                info += self.method_docstring_parameters(class_element["__init__"], tabs)
+                info += self.method_docstring_parameters(
+                    class_element["__init__"], tabs
+                )
             info += "\n"
         return info
 
     # Functions and Methods
 
     def generate_method_documentation(
-        self,
-        method_element: dict,
-        exceptions_info: list,
-        tabs: str = ""
+        self, method_element: dict, exceptions_info: list, tabs: str = ""
     ) -> str:
         """
         This method is XXX . It is a class method of DocumentFile.
@@ -423,8 +453,8 @@ class DocumentFile:
 
     def describe_class(self, element_name: str, tabs: str) -> str:
         """
-            Uses the class name to create a 'description' of the class.
-            E.g. RoundBall -> This class represents a round ball.
+        Uses the class name to create a 'description' of the class.
+        E.g. RoundBall -> This class represents a round ball.
         """
         if self.no_nlp:
             return f"{tabs}This class XXX .\n"
@@ -470,7 +500,10 @@ class DocumentFile:
         element_name = element.get("name")
         result = f"{tabs}"
 
-        if any(element_name.lower().startswith(prefab) for prefab in PREFAB_METHOD_EXPLANATIONS):
+        if any(
+            element_name.lower().startswith(prefab)
+            for prefab in PREFAB_METHOD_EXPLANATIONS
+        ):
             temp_name = element_name.lower()
             for prefab in PREFAB_METHOD_EXPLANATIONS:
                 if temp_name.startswith(prefab):
@@ -499,20 +532,21 @@ class DocumentFile:
                     [tokenized_phrase[0]["word"]]
                 )
                 tokenized_phrase.pop(0)
-                result += f"is for {stemmed_word[0]['stemmed']}ing" \
-                          f"{('.'if not tokenized_phrase else ' the ' + ' '.join([word['word'] for word in tokenized_phrase]))}"
+                result += (
+                    f"is for {stemmed_word[0]['stemmed']}ing"
+                    f"{('.'if not tokenized_phrase else ' the ' + ' '.join([word['word'] for word in tokenized_phrase]))}"
+                )
             else:
-                result += f"performs " \
-                          f"{('an ' if any(tokenized_phrase[0]['word'][0] in vocal for vocal in ['a', 'e', 'i', 'o', 'u']) else 'a ')}" \
-                          f"{' '.join([word['word'] for word in tokenized_phrase])}."
+                result += (
+                    f"performs "
+                    f"{('an ' if any(tokenized_phrase[0]['word'][0] in vocal for vocal in ['a', 'e', 'i', 'o', 'u']) else 'a ')}"
+                    f"{' '.join([word['word'] for word in tokenized_phrase])}."
+                )
 
         if element["genus"] == "class_method":
             result += f" It is a"
 
-            if (
-                not element["parameters"]
-                or element["parameters"][0]["name"] != "self"
-            ):
+            if not element["parameters"] or element["parameters"][0]["name"] != "self":
                 result += " static"
 
             return f"{result} class method of {element['context']['context_name']}.\n"

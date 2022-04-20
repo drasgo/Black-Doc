@@ -6,7 +6,7 @@ import toml
 CONFIGURATION_NAME = "blackdoc_configuration.toml"
 
 
-def log(data: str = "", level: str=""):
+def log(data: str = "", level: str = ""):
     """
     This method is XXX . It is a global method.
 
@@ -56,12 +56,10 @@ class Config:
         ".idea",
         ".pytest_cache",
         "*.egg-info",
-        "html"
+        "html",
     ]
 
-    whitelist: List[str] = [
-
-    ]
+    whitelist: List[str] = []
 
     backup_folder: str = "/blackdoc_backup/"
 
@@ -79,13 +77,11 @@ class Config:
         miscellaneous = configs.get("blackdoc", {})
 
         Config.workers = miscellaneous.get("workers", Config.workers)
-        Config.whitelist = miscellaneous.get(
-            "whitelist", Config.whitelist
-        )
+        Config.whitelist = miscellaneous.get("whitelist", Config.whitelist)
         Config.backup_folder = miscellaneous.get("backup_folder", Config.backup_folder)
         Config.blacklist = set(
-            miscellaneous.get("blacklist", Config.blacklist) +
-            [Config.backup_folder])
+            miscellaneous.get("blacklist", Config.blacklist) + [Config.backup_folder]
+        )
 
     @staticmethod
     def load_configs(configuration_paths: str):
@@ -99,8 +95,11 @@ class Config:
             with open(f"{configuration_paths}/{CONFIGURATION_NAME}", "r") as fp:
                 config_file = toml.load(fp)
         except (FileNotFoundError, toml.TomlDecodeError):
-            log(f"Error while trying to locate the configuration file {configuration_paths}. "
-                f"Using default configurations.", level="info")
+            log(
+                f"Error while trying to locate the configuration file {configuration_paths}. "
+                f"Using default configurations.",
+                level="info",
+            )
             config_file = {}
         Config._set_values(config_file)
         return Config
